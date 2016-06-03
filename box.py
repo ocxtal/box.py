@@ -9,8 +9,8 @@ from math import floor
 from sys import argv
 
 if len(argv) != 7:
-	print "Invalid number of arguments"
-	print "usage: ./box.py <width> <height> <depth> <thickness> <pitch> <output filename>"
+	print("Invalid number of arguments")
+	print("usage: ./box.py <width> <height> <depth> <thickness> <pitch> <output filename (.dxf)>")
 
 # 引数のとりだし
 w = float(argv[1])		# width
