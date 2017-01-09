@@ -14,7 +14,7 @@ Python 2.7+ or 3.3+ with [dxfwrite](https://pypi.python.org/pypi/dxfwrite/) inst
 ## Usage
 
 ```
-./box.py <width> <height> <depth> <thickness> <pitch> <output filename (.dxf)>
+./box.py <width> <height> <depth> -t<thickness> -p<pitch> > out.dxf
 ```
 
 ## License
