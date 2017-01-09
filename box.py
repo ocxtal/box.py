@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
 # box generator
@@ -6,28 +6,6 @@
 
 from dxfwrite import DXFEngine as dxf
 from math import floor
-from sys import argv
-
-if len(argv) != 7:
-	print("Invalid number of arguments")
-	print("usage: ./box.py <width> <height> <depth> <thickness> <pitch> <output filename (.dxf)>")
-
-# 引数のとりだし
-w = float(argv[1])		# width
-h = float(argv[2])		# height
-d = float(argv[3])		# depth
-t = float(argv[4])		# thickness
-p = float(argv[5])		# pitch
-filename = argv[6]
-
-# print w, h, d, t, p
-
-# 箱のピッチの計算
-pw = w / floor(w/p)		# 引数で与えられたpitchより少し大きい値で、widthを割り切れる値を計算する
-ph = h / floor(h/p)
-pd = d / floor(d/p)
-
-#print pw, ph, pd
 
 def generate(width, wpitch, wpol, height, hpitch, hpol):
 	h = height
@@ -70,21 +48,50 @@ def plot(drawing, a, offset):
 		prev_point = point
 # end of generate
 
+if __name__ == '__main__':
+	import sys
+	from optparse import OptionParser
+	p = OptionParser(usage = "python box.py <width> <height> <depth> > out.dxf # all dimensions are in millimeters")
+	p.add_option("-t", "--thickness", dest = "t", help = "board thickness (in millimeters)", default = 5)
+	p.add_option("-p", "--pitch", dest = "p", help = "cog pitch (in millimeters)", default = 10)
+	p.add_option("-o", "--output", dest = "o", help = "output file name")
 
-a = generate(w, pw, 1, d, pd, 1)
-b = generate(w, pw, 0, h, ph, 1)
-c = generate(h, ph, 0, d, pd, 0)
-ai = generate(w, pw, 0, d, pd, 0)
-bi = generate(w, pw, 1, h, ph, 0)
-ci = generate(h, ph, 1, d, pd, 1)
+	(opt, args) = p.parse_args()
 
-# dxfファイルの作成
-drawing = dxf.drawing(filename)
-plot(drawing, a, [0,0]);
-plot(drawing, b, [0, d+p])
-plot(drawing, c, [w+p, 0])
-plot(drawing, ai, [w+h+2*p, 0])
-plot(drawing, bi, [w+h+2*p, d+p])
-plot(drawing, ci, [2*w+h+3*p, 0])
-drawing.save()
-#drawing.close()
+	if len(args) == 0:
+		p.error("at least one dimension (width) must be given as positional argument.")
+	elif len(args) < 3:
+		args.append(args[0])
+		args.append(args[0])
+
+	w = float(args[0])		# width
+	h = float(args[1])		# height
+	d = float(args[2])		# depth
+	t = float(opt.t)		# thickness
+	p = float(opt.p)		# pitch
+	filename = opt.o
+	# print w, h, d, t, p
+	# calc pitch
+	pw = w / floor(w/p)
+	ph = h / floor(h/p)
+	pd = d / floor(d/p)
+
+	#print pw, ph, pd
+
+	a = generate(w, pw, 1, d, pd, 1)
+	b = generate(w, pw, 0, h, ph, 1)
+	c = generate(h, ph, 0, d, pd, 0)
+	ai = generate(w, pw, 0, d, pd, 0)
+	bi = generate(w, pw, 1, h, ph, 0)
+	ci = generate(h, ph, 1, d, pd, 1)
+
+	# dxfファイルの作成
+	drawing = dxf.drawing()
+	plot(drawing, a, [0,0]);
+	plot(drawing, b, [0, d+p])
+	plot(drawing, c, [w+p, 0])
+	plot(drawing, ai, [w+h+2*p, 0])
+	plot(drawing, bi, [w+h+2*p, d+p])
+	plot(drawing, ci, [2*w+h+3*p, 0])
+	drawing.save_to_fileobj(open(opt.o, "w") if opt.o is not None else sys.stdout)
+	#drawing.close()
